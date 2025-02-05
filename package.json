@@ -3,8 +3,10 @@
   "description": "A client for the Volgistics API",
   "repository": "https://github.com/pooh-bear/volgistics-api-client",
   "author": "Gabe Palomares <dev@gabe.pw>",
-  "version": "1.0.3",
-  "main": "dist/index.js",
+  "version": "1.0.4",
+  "main": "dist/bundle.cjs",
+  "module": "dist/bundle.esm.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.2",
