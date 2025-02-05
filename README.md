@@ -1,5 +1,7 @@
 # Volgistics API Client
 
+[![npm version](https://badge.fury.io/js/volgistics-api-client.svg)](https://badge.fury.io/js/volgistics-api-client)
+
 This is a client for the Volgistics API, built in TypeScript. 
 It is designed to be used with a organization within the [Volgistics](https://www.volgistics.com/) volunteer platform.
 
@@ -11,7 +13,7 @@ yarn add volgistics-api-client
 
 ## Usage
 
-## Initialize
+### Initialize
 
 #### ESM
 ```ts
