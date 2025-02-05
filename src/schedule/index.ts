@@ -42,8 +42,6 @@ export const getSchedule = async ({
 
     const resp = await response.json();
 
-    console.log(resp);
-
     if (!resp && !resp.schedule && !(resp.schedule?.length >= 0)) {
         throw new Error('No schedule found');
     }
