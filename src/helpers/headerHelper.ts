@@ -8,7 +8,7 @@ const initialRequestHeaders = {
 } 
 
 export const initReqHeaders = ({ referer, authorization }: { referer: string; authorization?: string }) => {
-    let headers = {
+    let headers: Record<string, string> = {
         ...initialRequestHeaders,
         "Referer": referer,
     };

@@ -1,9 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "outDir": "./build",
-    "rootDir": "./src",
-    "skipLibCheck": true
-  }
+    "target": "ESNext",
+    "module": "ESNext",
+    "declaration": true,
+    "outDir": "build",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
