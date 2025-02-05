@@ -11,7 +11,9 @@ yarn add volgistics-api-client
 
 ## Usage
 
-### Initialize and login
+## Initialize
+
+#### ESM
 ```ts
 import { VolgisticsClient } from 'volgistics-api-client';
 
@@ -20,14 +22,23 @@ const client = new VolgisticsClient({ orgId: '1234' });
 client.login({ email: 'example@example.com', password: 'blah1234' });
 ```
 
-## Available methods
+#### CommonJS
+```ts
+const { VolgisticsClient } = require('volgistics-api-client');
+
+const client = new VolgisticsClient({ orgId: '1234' });
+
+client.login({ email: 'example@example.com', password: 'blah1234' });
+```
+
+### Available methods
 
 #### Get schedule
 Retrieves schedule entries for a given date. Optionally filter entries by title prefix.
 ```ts
 const schedule = await client.getSchedule({
   date: '2025-01-01',
-  // prefix: 'Volunteer'
+  // prefix: 'Volunteer Services'
 });
 ```
 

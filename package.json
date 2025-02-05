@@ -1,16 +1,26 @@
 {
   "name": "volgistics-api-client",
+  "description": "A client for the Volgistics API",
+  "repository": "https://github.com/pooh-bear/volgistics-api-client",
+  "author": "Gabe Palomares <dev@gabe.pw>",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@types/node": "^22.13.1",
     "nodemon": "^3.1.9",
+    "rollup": "^4.34.2",
+    "rollup-plugin-typescript2": "^0.36.0",
     "typescript": "^5.7.3"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
-    "build::production": "tsc --outDir dist"
-  }
+    "build": "rollup -c"
+  },
+  "keywords": [
+    "volgistics",
+    "volgistics-api",
+    "volgistics-api-client"
+  ]
 }

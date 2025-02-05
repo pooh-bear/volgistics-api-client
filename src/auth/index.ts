@@ -4,7 +4,7 @@ import { postReqHeaders } from "../helpers/headerHelper";
 export class Auth {
     private orgId: string;
     private baseUrl: string;
-    private jwt: string;
+    private jwt!: string;
 
     constructor({ baseUrl, orgId }: { baseUrl: string; orgId: string }) {
         this.orgId = orgId;
