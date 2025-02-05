@@ -3,7 +3,7 @@
   "description": "A client for the Volgistics API",
   "repository": "https://github.com/pooh-bear/volgistics-api-client",
   "author": "Gabe Palomares <dev@gabe.pw>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
