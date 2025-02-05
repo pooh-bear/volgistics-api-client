@@ -1,0 +1,5 @@
+secret:
+  ignored_matches:
+  - match: db719a87124d834fd9dc3f760a423d0c7635ba69b112144be84d7632b9a3ace8
+    name: X - src/helpers/headerHelper.ts:l.6
+version: 2
