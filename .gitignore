@@ -1,0 +1,10 @@
+build/
+node_modules/
+
+yarn*
+
+# macOS system files
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
