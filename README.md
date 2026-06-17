@@ -15,11 +15,13 @@ yarn add volgistics-api-client
 
 ### Initialize
 
+> **Note:** The `apiKey` parameter is required. You can find it by inspecting the `X-API-Key` header sent by the Volgistics Angular app.
+
 #### ESM
 ```ts
 import { VolgisticsClient } from 'volgistics-api-client';
 
-const client = new VolgisticsClient({ orgId: '1234' });
+const client = new VolgisticsClient({ orgId: '1234', apiKey: 'your-api-key' });
 
 client.login({ email: 'example@example.com', password: 'blah1234' });
 ```
@@ -28,7 +30,7 @@ client.login({ email: 'example@example.com', password: 'blah1234' });
 ```ts
 const { VolgisticsClient } = require('volgistics-api-client');
 
-const client = new VolgisticsClient({ orgId: '1234' });
+const client = new VolgisticsClient({ orgId: '1234', apiKey: 'your-api-key' });
 
 client.login({ email: 'example@example.com', password: 'blah1234' });
 ```
