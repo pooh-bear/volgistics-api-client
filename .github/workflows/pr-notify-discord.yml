@@ -1,0 +1,82 @@
+name: PR Notify Discord
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, closed, ready_for_review, review_requested]
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+
+jobs:
+  notify:
+    if: github.event.pull_request || (github.event.issue.pull_request != null)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build embed description
+        id: build
+        run: |
+          case "${{ github.event_name }}" in
+            pull_request)
+              ACTION="${{ github.event.action }}"
+              case "$ACTION" in
+                opened) DESC="**:pr_open: PR Opened**" ;;
+                reopened) DESC="**:pr_reopen: PR Reopened**" ;;
+                synchronize) DESC="**:arrows_counterclockwise: PR Updated (new commit pushed)**" ;;
+                closed)
+                  if [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
+                    DESC="**:merged: PR Merged!**"
+                  else
+                    DESC="**:pr_closed: PR Closed**"
+                  fi
+                  ;;
+                ready_for_review) DESC="**:eyes: PR Ready for Review**" ;;
+                review_requested) DESC="**:eyes: Review Requested**" ;;
+                edited) DESC="**:pencil: PR Edited**" ;;
+                *) DESC="**:bell: PR Event: $ACTION**" ;;
+              esac
+              ;;
+            pull_request_review)
+              STATE="${{ github.event.review.state }}"
+              case "$STATE" in
+                approved) DESC="**:white_check_mark: PR Approved**" ;;
+                changes_requested) DESC="**:x: Changes Requested**" ;;
+                commented) DESC="**:speech_balloon: PR Review Commented**" ;;
+                *) DESC="**:bell: PR Review: $STATE**" ;;
+              esac
+              ;;
+            issue_comment)
+              DESC="**:speech_balloon: New Comment on PR**" ;;
+          esac
+          echo "desc=$DESC" >> "$GITHUB_OUTPUT"
+
+      - name: Send Discord notification
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_PR_WEBHOOK }}
+          DESC: ${{ steps.build.outputs.desc }}
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.issue.title }}
+          PR_URL: ${{ github.event.pull_request.html_url || github.event.issue.html_url }}
+          PR_NUM: ${{ github.event.pull_request.number || github.event.issue.number }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -X POST "$WEBHOOK_URL" \
+            -d "$(cat <<ENDJSON
+          {
+            "username": "Frisk 💖",
+            "avatar_url": "",
+            "embeds": [{
+              "title": "$PR_TITLE",
+              "url": "$PR_URL",
+              "description": "$DESC",
+              "color": 16738690,
+              "fields": [
+                {"name": "Repository", "value": "${{ github.repository }}", "inline": true},
+                {"name": "PR #", "value": "$PR_NUM", "inline": true},
+                {"name": "By", "value": "$ACTOR", "inline": true}
+              ],
+              "timestamp": "${{ github.event.pull_request.updated_at || github.event.issue.updated_at }}"
+            }]
+          }
+          ENDJSON
+          )"
