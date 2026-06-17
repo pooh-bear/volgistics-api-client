@@ -4,12 +4,18 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var https = require('https');
 
+/**
+ * Shared constants for the Volgistics API client
+ */
+/** Browser User-Agent header value matching what VicNet expects */
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15';
+
 const baseHeaders$1 = (apiKey) => ({
     "Accept": "application/json, text/plain, */*",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
+    "User-Agent": USER_AGENT,
     "X-API-Key": apiKey,
 });
 const initReqHeaders = ({ referer, authorization, apiKey }) => {
@@ -81,7 +87,7 @@ class Auth {
 /** Base headers for schedule API calls */
 const baseHeaders = (apiKey) => ({
     'Accept': 'application/json, text/plain, */*',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'User-Agent': USER_AGENT,
     'X-API-Key': apiKey,
 });
 /**
@@ -159,7 +165,7 @@ const mutationHeaders = ({ referer, authorization, apiKey }) => ({
     'X-API-Key': apiKey,
     'Accept': 'application/json, text/plain, */*',
     'Referer': referer,
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'User-Agent': USER_AGENT,
 });
 /**
  * Sign up for an open shift

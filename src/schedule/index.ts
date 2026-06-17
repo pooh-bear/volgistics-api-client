@@ -1,10 +1,11 @@
 import { request as httpsRequest } from 'https';
 import { GetScheduleOptions, ScheduleEntry, AddScheduleEntryOptions, DeleteScheduleEntryOptions, AddScheduleResponse, DeleteScheduleResponse } from "./index.d";
+import { USER_AGENT } from "../helpers/constants";
 
 /** Base headers for schedule API calls */
 const baseHeaders = (apiKey: string) => ({
     'Accept': 'application/json, text/plain, */*',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'User-Agent': USER_AGENT,
     'X-API-Key': apiKey,
 });
 
@@ -108,7 +109,7 @@ const mutationHeaders = ({ referer, authorization, apiKey }: { referer: string; 
     'X-API-Key': apiKey,
     'Accept': 'application/json, text/plain, */*',
     'Referer': referer,
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'User-Agent': USER_AGENT,
 });
 
 /**
