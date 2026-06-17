@@ -24,5 +24,8 @@
     "volgistics",
     "volgistics-api",
     "volgistics-api-client"
-  ]
+  ],
+  "dependencies": {
+    "@rollup/plugin-typescript": "^12.3.0"
+  }
 }

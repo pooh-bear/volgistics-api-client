@@ -2,17 +2,19 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-const initialRequestHeaders = {
+var https = require('https');
+
+const baseHeaders = (apiKey) => ({
     "Accept": "application/json, text/plain, */*",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
-    "X-API-Key": "6wRWFhd.aVNctG6h4Y5f4Kp4furHA4CypFdSrtE7",
-};
-const initReqHeaders = ({ referer, authorization }) => {
+    "X-API-Key": apiKey,
+});
+const initReqHeaders = ({ referer, authorization, apiKey }) => {
     let headers = {
-        ...initialRequestHeaders,
+        ...baseHeaders(apiKey),
         "Referer": referer,
     };
     if (authorization) {
@@ -20,9 +22,9 @@ const initReqHeaders = ({ referer, authorization }) => {
     }
     return headers;
 };
-const postReqHeaders = ({ referer, authorization }) => {
+const postReqHeaders = ({ referer, authorization, apiKey }) => {
     return {
-        ...initReqHeaders({ referer, authorization }),
+        ...initReqHeaders({ referer, authorization, apiKey }),
         "Content-Type": "application/json",
         "Accept-Language": "en-US,en;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",
@@ -34,15 +36,17 @@ const postReqHeaders = ({ referer, authorization }) => {
 class Auth {
     orgId;
     baseUrl;
+    apiKey;
     jwt;
-    constructor({ baseUrl, orgId }) {
+    constructor({ baseUrl, orgId, apiKey }) {
         this.orgId = orgId;
         this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
     }
     async login({ email, password }) {
         const loginEndpoint = 'auth/log-in';
         const referer = `${this.baseUrl}${this.orgId}/login`;
-        const headers = postReqHeaders({ referer });
+        const headers = postReqHeaders({ referer, apiKey: this.apiKey });
         const response = await fetch(`${this.baseUrl}${loginEndpoint}`, {
             method: 'POST',
             headers,
@@ -64,9 +68,47 @@ class Auth {
     getAuthorization() {
         return `Bearer ${this.jwt}`;
     }
+    getMasterKey() {
+        if (!this.jwt) {
+            throw new Error('Not authenticated. Call login() first.');
+        }
+        const payload = this.jwt.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        return decoded.masterKey;
+    }
 }
 
-const getSchedule = async ({ baseUrl, orgId, authorization, date, prefix }) => {
+/**
+ * Custom HTTPS fetcher using Node's native https module.
+ * Volgistics API doesn't handle HTTP/2 POST/DELETE bodies well.
+ * Node's https module negotiates HTTP/1.1 automatically.
+ */
+function http11Request(url, options) {
+    return new Promise((resolve, reject) => {
+        const u = new URL(url);
+        const body = options.body || '';
+        const req = https.request({
+            hostname: u.hostname,
+            port: 443,
+            path: u.pathname + u.search,
+            method: options.method,
+            headers: {
+                ...options.headers,
+                'Host': u.hostname,
+                'Content-Length': Buffer.byteLength(body).toString(),
+            },
+        }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => resolve({ status: res.statusCode || 500, data }));
+        });
+        req.on('error', reject);
+        if (body)
+            req.write(body);
+        req.end();
+    });
+}
+const getSchedule = async ({ baseUrl, orgId, authorization, apiKey, date, prefix }) => {
     const dateObj = new Date(date);
     const dateDMY = dateObj.toLocaleDateString('en-US', {
         month: '2-digit',
@@ -85,7 +127,7 @@ const getSchedule = async ({ baseUrl, orgId, authorization, date, prefix }) => {
         currView: 'month',
         platform: 'web',
     });
-    const headers = initReqHeaders({ referer, authorization });
+    const headers = initReqHeaders({ referer, authorization, apiKey });
     const response = await fetch(`${baseUrl}${getEndpoint}?${params.toString()}`, {
         method: 'GET',
         headers,
@@ -100,6 +142,69 @@ const getSchedule = async ({ baseUrl, orgId, authorization, date, prefix }) => {
     }
     return data.filter(entry => entry.title.startsWith(prefix));
 };
+/** Minimal mutation headers that match what the Angular app sends */
+const mutationHeaders = ({ referer, authorization, apiKey }) => ({
+    'Authorization': authorization,
+    'Content-Type': 'application/json',
+    'X-API-Key': apiKey,
+    'Accept': 'application/json, text/plain, */*',
+    'Referer': referer,
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+});
+/**
+ * Sign up for an open shift
+ */
+const addScheduleEntry = async ({ baseUrl, orgId, authorization, apiKey, jobNum, slotNum, volNum, from, to, volCount = 1, anyTime = false, entryNote, slotNumbers, }) => {
+    const endpoint = 'schedule';
+    const referer = `${baseUrl}${orgId}/schedule?view=month`;
+    const headers = mutationHeaders({ referer, authorization, apiKey });
+    const body = {
+        jobNum,
+        from,
+        to,
+        slotNum,
+        volNum,
+        volCount,
+        anyTime,
+        isMyScheduleView: false,
+        slotNumbers: JSON.stringify(slotNumbers || [slotNum]),
+    };
+    if (entryNote) {
+        body.entryNote = entryNote;
+    }
+    const response = await http11Request(`${baseUrl}${endpoint}?action=add&kind=single`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+    });
+    const resp = JSON.parse(response.data);
+    if (resp.vError && resp.vError.number !== 0) {
+        throw new Error(resp.vError.description || 'Failed to add schedule entry');
+    }
+    return resp;
+};
+/**
+ * Remove a scheduled shift (volunteer sign-off)
+ */
+const deleteScheduleEntry = async ({ baseUrl, orgId, authorization, apiKey, date, fillNumbers, }) => {
+    const endpoint = 'schedule';
+    const referer = `${baseUrl}${orgId}/schedule`;
+    const headers = mutationHeaders({ referer, authorization, apiKey });
+    const response = await http11Request(`${baseUrl}${endpoint}`, {
+        method: 'DELETE',
+        headers,
+        body: JSON.stringify({
+            date,
+            fillNumbers: JSON.stringify(fillNumbers),
+            isListView: false,
+        }),
+    });
+    const resp = JSON.parse(response.data);
+    if (resp.vError && resp.vError.number !== 0) {
+        throw new Error(resp.vError.description || 'Failed to delete schedule entry');
+    }
+    return resp;
+};
 
 /**
  * VolgisticsClient provides an interface to interact with the Volgistics API
@@ -111,12 +216,17 @@ class VolgisticsClient {
     auth;
     baseUrl;
     orgId;
-    constructor({ baseUrl, orgId }) {
+    apiKey;
+    constructor({ baseUrl, orgId, apiKey }) {
         baseUrl = baseUrl || 'https://www.volgistics.com/api/vicnet/';
         this.baseUrl = baseUrl;
         orgId = String(orgId);
         this.orgId = orgId;
-        this.auth = new Auth({ baseUrl, orgId });
+        if (!apiKey) {
+            throw new Error('VolgisticsClient: apiKey is required');
+        }
+        this.apiKey = apiKey;
+        this.auth = new Auth({ baseUrl, orgId, apiKey });
     }
     /**
      * Authenticates a user with email and password
@@ -155,8 +265,58 @@ class VolgisticsClient {
             baseUrl: this.baseUrl,
             orgId: this.orgId,
             authorization,
+            apiKey: this.apiKey,
             date,
             prefix
+        });
+    }
+    /**
+     * Signs up for an open shift
+     *
+     * @param options.jobNum - Job number from the opening
+     * @param options.slotNum - Slot number from the opening
+     * @param options.from - Shift start time (ISO string)
+     * @param options.to - Shift end time (ISO string)
+     * @param options.volCount - Number of volunteers to sign up (default 1)
+     * @param options.anyTime - Whether the shift is all-day
+     * @param options.entryNote - Optional entry note
+     * @returns Promise resolving to the API response
+     */
+    async addScheduleEntry({ jobNum, slotNum, from, to, volCount, anyTime, entryNote, slotNumbers }) {
+        const authorization = this.auth.getAuthorization();
+        const volNum = this.auth.getMasterKey();
+        return addScheduleEntry({
+            baseUrl: this.baseUrl,
+            orgId: this.orgId,
+            authorization,
+            apiKey: this.apiKey,
+            jobNum,
+            slotNum,
+            volNum,
+            from,
+            to,
+            volCount,
+            anyTime,
+            entryNote,
+            slotNumbers,
+        });
+    }
+    /**
+     * Removes a scheduled shift
+     *
+     * @param options.date - Date of the shift (ISO string)
+     * @param options.fillNumbers - Fill number(s) from the scheduled entry
+     * @returns Promise resolving to the API response
+     */
+    async deleteScheduleEntry({ date, fillNumbers }) {
+        const authorization = this.auth.getAuthorization();
+        return deleteScheduleEntry({
+            baseUrl: this.baseUrl,
+            orgId: this.orgId,
+            authorization,
+            apiKey: this.apiKey,
+            date,
+            fillNumbers,
         });
     }
 }

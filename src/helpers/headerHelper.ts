@@ -1,15 +1,15 @@
-const initialRequestHeaders = {
+const baseHeaders = (apiKey: string) => ({
     "Accept": "application/json, text/plain, */*",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
-    "X-API-Key": "6wRWFhd.aVNctG6h4Y5f4Kp4furHA4CypFdSrtE7",
-} 
+    "X-API-Key": apiKey,
+});
 
-export const initReqHeaders = ({ referer, authorization }: { referer: string; authorization?: string }) => {
+export const initReqHeaders = ({ referer, authorization, apiKey }: { referer: string; authorization?: string; apiKey: string }) => {
     let headers: Record<string, string> = {
-        ...initialRequestHeaders,
+        ...baseHeaders(apiKey),
         "Referer": referer,
     };
 
@@ -20,9 +20,9 @@ export const initReqHeaders = ({ referer, authorization }: { referer: string; au
     return headers;
 }
 
-export const postReqHeaders = ({ referer, authorization }: { referer: string; authorization?: string }) => {
+export const postReqHeaders = ({ referer, authorization, apiKey }: { referer: string; authorization?: string; apiKey: string }) => {
     return {
-        ...initReqHeaders({ referer, authorization }),
+        ...initReqHeaders({ referer, authorization, apiKey }),
         "Content-Type": "application/json",
         "Accept-Language": "en-US,en;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",

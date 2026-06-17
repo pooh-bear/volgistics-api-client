@@ -2,8 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "declaration": true,
-    "outDir": "build",
+    "declaration": false,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
