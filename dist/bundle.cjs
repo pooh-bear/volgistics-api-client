@@ -4,7 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var https = require('https');
 
-const baseHeaders = (apiKey) => ({
+const baseHeaders$1 = (apiKey) => ({
     "Accept": "application/json, text/plain, */*",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
@@ -14,7 +14,7 @@ const baseHeaders = (apiKey) => ({
 });
 const initReqHeaders = ({ referer, authorization, apiKey }) => {
     let headers = {
-        ...baseHeaders(apiKey),
+        ...baseHeaders$1(apiKey),
         "Referer": referer,
     };
     if (authorization) {
@@ -78,6 +78,12 @@ class Auth {
     }
 }
 
+/** Base headers for schedule API calls */
+const baseHeaders = (apiKey) => ({
+    'Accept': 'application/json, text/plain, */*',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'X-API-Key': apiKey,
+});
 /**
  * Custom HTTPS fetcher using Node's native https module.
  * Volgistics API doesn't handle HTTP/2 POST/DELETE bodies well.
@@ -127,7 +133,11 @@ const getSchedule = async ({ baseUrl, orgId, authorization, apiKey, date, prefix
         currView: 'month',
         platform: 'web',
     });
-    const headers = initReqHeaders({ referer, authorization, apiKey });
+    const headers = {
+        ...baseHeaders(apiKey),
+        'Referer': referer,
+        'Authorization': authorization,
+    };
     const response = await fetch(`${baseUrl}${getEndpoint}?${params.toString()}`, {
         method: 'GET',
         headers,

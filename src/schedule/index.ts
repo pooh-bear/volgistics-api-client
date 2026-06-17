@@ -1,6 +1,12 @@
 import { request as httpsRequest } from 'https';
 import { GetScheduleOptions, ScheduleEntry, AddScheduleEntryOptions, DeleteScheduleEntryOptions, AddScheduleResponse, DeleteScheduleResponse } from "./index.d";
-import { initReqHeaders } from "../helpers/headerHelper";
+
+/** Base headers for schedule API calls */
+const baseHeaders = (apiKey: string) => ({
+    'Accept': 'application/json, text/plain, */*',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15',
+    'X-API-Key': apiKey,
+});
 
 /**
  * Custom HTTPS fetcher using Node's native https module.
@@ -69,7 +75,11 @@ export const getSchedule = async ({
         platform: 'web',
     });
 
-    const headers = initReqHeaders({ referer, authorization, apiKey });
+    const headers = {
+        ...baseHeaders(apiKey),
+        'Referer': referer,
+        'Authorization': authorization,
+    };
 
     const response = await fetch(`${baseUrl}${getEndpoint}?${params.toString()}`, {
         method: 'GET',
