@@ -1,6 +1,6 @@
 import { Auth } from '@/auth/index';
 import { AuthOptions } from '@/auth/index.d';
-import { GetScheduleOptions, VolgisticsClientOptions } from './index.d';
+import { GetScheduleOptions, VolgisticsClientOptions, AddScheduleEntryOptions, DeleteScheduleEntryOptions } from './index.d';
 /**
  * VolgisticsClient provides an interface to interact with the Volgistics API
  *
@@ -11,7 +11,8 @@ export declare class VolgisticsClient {
     private auth;
     private baseUrl;
     private orgId;
-    constructor({ baseUrl, orgId }: VolgisticsClientOptions);
+    private apiKey;
+    constructor({ baseUrl, orgId, apiKey }: VolgisticsClientOptions);
     /**
      * Authenticates a user with email and password
      *
@@ -36,8 +37,30 @@ export declare class VolgisticsClient {
      * @throws Error if schedule cannot be retrieved
      */
     getSchedule({ date, prefix }: GetScheduleOptions): Promise<import("./schedule/index").ScheduleEntry[]>;
+    /**
+     * Signs up for an open shift
+     *
+     * @param options.jobNum - Job number from the opening
+     * @param options.slotNum - Slot number from the opening
+     * @param options.from - Shift start time (ISO string)
+     * @param options.to - Shift end time (ISO string)
+     * @param options.volCount - Number of volunteers to sign up (default 1)
+     * @param options.anyTime - Whether the shift is all-day
+     * @param options.entryNote - Optional entry note
+     * @returns Promise resolving to the API response
+     */
+    addScheduleEntry({ jobNum, slotNum, from, to, volCount, anyTime, entryNote, slotNumbers }: Omit<AddScheduleEntryOptions, 'baseUrl' | 'orgId' | 'authorization' | 'volNum' | 'apiKey'>): Promise<import("./schedule/index").AddScheduleResponse>;
+    /**
+     * Removes a scheduled shift
+     *
+     * @param options.date - Date of the shift (ISO string)
+     * @param options.fillNumbers - Fill number(s) from the scheduled entry
+     * @returns Promise resolving to the API response
+     */
+    deleteScheduleEntry({ date, fillNumbers }: Omit<DeleteScheduleEntryOptions, 'baseUrl' | 'orgId' | 'authorization' | 'apiKey'>): Promise<import("./schedule/index").DeleteScheduleResponse>;
 }
 declare const _default: {
     Auth: typeof Auth;
 };
 export default _default;
+//# sourceMappingURL=index.d.ts.map

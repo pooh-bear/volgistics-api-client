@@ -3,7 +3,7 @@
   "description": "A client for the Volgistics API",
   "repository": "https://github.com/pooh-bear/volgistics-api-client",
   "author": "Gabe Palomares <dev@gabe.pw>",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "main": "dist/bundle.cjs",
   "module": "dist/bundle.esm.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
     "typescript": "^5.7.3"
   },
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c && tsc --emitDeclarationOnly --outDir dist"
   },
   "keywords": [
     "volgistics",
