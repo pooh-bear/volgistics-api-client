@@ -1,10 +1,12 @@
-export declare const initReqHeaders: ({ referer, authorization }: {
+export declare const initReqHeaders: ({ referer, authorization, apiKey }: {
     referer: string;
     authorization?: string;
+    apiKey: string;
 }) => Record<string, string>;
-export declare const postReqHeaders: ({ referer, authorization }: {
+export declare const postReqHeaders: ({ referer, authorization, apiKey }: {
     referer: string;
     authorization?: string;
+    apiKey: string;
 }) => {
     "Content-Type": string;
     "Accept-Language": string;
@@ -13,13 +15,15 @@ export declare const postReqHeaders: ({ referer, authorization }: {
     Priority: string;
 };
 declare const _default: {
-    initReqHeaders: ({ referer, authorization }: {
+    initReqHeaders: ({ referer, authorization, apiKey }: {
         referer: string;
         authorization?: string;
+        apiKey: string;
     }) => Record<string, string>;
-    postReqHeaders: ({ referer, authorization }: {
+    postReqHeaders: ({ referer, authorization, apiKey }: {
         referer: string;
         authorization?: string;
+        apiKey: string;
     }) => {
         "Content-Type": string;
         "Accept-Language": string;
@@ -29,3 +33,4 @@ declare const _default: {
     };
 };
 export default _default;
+//# sourceMappingURL=headerHelper.d.ts.map

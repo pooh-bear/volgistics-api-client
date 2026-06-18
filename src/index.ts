@@ -1,7 +1,7 @@
 import { Auth } from '@/auth/index';
-import { getSchedule } from '@/schedule/index';
+import { getSchedule, addScheduleEntry, deleteScheduleEntry } from '@/schedule/index';
 import { AuthOptions } from '@/auth/index.d';
-import { GetScheduleOptions, VolgisticsClientOptions } from './index.d';
+import { GetScheduleOptions, VolgisticsClientOptions, AddScheduleEntryOptions, DeleteScheduleEntryOptions } from './index.d';
 
 /**
  * VolgisticsClient provides an interface to interact with the Volgistics API
@@ -13,14 +13,19 @@ export class VolgisticsClient {
     private auth: Auth;
     private baseUrl: string;
     private orgId: string;
+    private apiKey: string;
 
-    constructor({ baseUrl, orgId }: VolgisticsClientOptions) {
+    constructor({ baseUrl, orgId, apiKey }: VolgisticsClientOptions) {
         baseUrl = baseUrl || 'https://www.volgistics.com/api/vicnet/';
         this.baseUrl = baseUrl;
         orgId = String(orgId);
         this.orgId = orgId;
+        if (!apiKey) {
+            throw new Error('VolgisticsClient: apiKey is required');
+        }
+        this.apiKey = apiKey;
 
-        this.auth = new Auth({ baseUrl, orgId });
+        this.auth = new Auth({ baseUrl, orgId, apiKey });
     }
     /**
      * Authenticates a user with email and password
@@ -62,8 +67,60 @@ export class VolgisticsClient {
             baseUrl: this.baseUrl,
             orgId: this.orgId,
             authorization,
+            apiKey: this.apiKey,
             date,
             prefix
+        });
+    }
+
+    /**
+     * Signs up for an open shift
+     * 
+     * @param options.jobNum - Job number from the opening
+     * @param options.slotNum - Slot number from the opening
+     * @param options.from - Shift start time (ISO string)
+     * @param options.to - Shift end time (ISO string)
+     * @param options.volCount - Number of volunteers to sign up (default 1)
+     * @param options.anyTime - Whether the shift is all-day
+     * @param options.entryNote - Optional entry note
+     * @returns Promise resolving to the API response
+     */
+    async addScheduleEntry({ jobNum, slotNum, from, to, volCount, anyTime, entryNote, slotNumbers }: Omit<AddScheduleEntryOptions, 'baseUrl' | 'orgId' | 'authorization' | 'volNum' | 'apiKey'>) {
+        const authorization = this.auth.getAuthorization();
+        const volNum = this.auth.getMasterKey();
+        return addScheduleEntry({
+            baseUrl: this.baseUrl,
+            orgId: this.orgId,
+            authorization,
+            apiKey: this.apiKey,
+            jobNum,
+            slotNum,
+            volNum,
+            from,
+            to,
+            volCount,
+            anyTime,
+            entryNote,
+            slotNumbers,
+        });
+    }
+
+    /**
+     * Removes a scheduled shift
+     * 
+     * @param options.date - Date of the shift (ISO string)
+     * @param options.fillNumbers - Fill number(s) from the scheduled entry
+     * @returns Promise resolving to the API response
+     */
+    async deleteScheduleEntry({ date, fillNumbers }: Omit<DeleteScheduleEntryOptions, 'baseUrl' | 'orgId' | 'authorization' | 'apiKey'>) {
+        const authorization = this.auth.getAuthorization();
+        return deleteScheduleEntry({
+            baseUrl: this.baseUrl,
+            orgId: this.orgId,
+            authorization,
+            apiKey: this.apiKey,
+            date,
+            fillNumbers,
         });
     }
 }
